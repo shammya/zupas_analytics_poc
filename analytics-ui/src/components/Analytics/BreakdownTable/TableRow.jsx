@@ -51,16 +51,8 @@ export default function TableRow({ row, activeMetric, ontimeActive, onCellClick,
         onCellClick={onCellClick}
       />
 
-      {/* On-time % — opens panel */}
-      <td
-        className={`${styles.pctCell} ${ontimeActive ? styles.activePct : ''}`}
-        onClick={() =>
-          onOntimeClick({
-            scopeIds:   [row.company_id],
-            scopeLabel: row.company_name || `Company ${row.company_id}`,
-          })
-        }
-      >
+      {/* On-time % — display only */}
+      <td className={styles.pctCell}>
         <span className={styles.pctVal}>{row.ontime_percentage.toFixed(1)}%</span>
       </td>
 

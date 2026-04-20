@@ -1,18 +1,11 @@
 /**
  * Thin wrappers over the FastAPI analytics endpoints.
  * All params use the API's exact query param names.
+ * Every request includes the JWT Bearer token from localStorage.
  */
 
 const BASE = '/api/analytics'
-
-/**
- * GET /api/analytics/companies
- * Returns { companies: [{ company_id, company_name }] } — no timeframe filter.
- * Used to seed the location dropdown.
- */
-export function getCompanies({ companyIds }) {
-  return get('/companies', { company_ids: companyIds.join(',') })
-}
+const TOKEN_KEY = 'analytics_token'
 
 function buildQS(params) {
   const q = new URLSearchParams()
@@ -23,8 +16,19 @@ function buildQS(params) {
 }
 
 async function get(path, params = {}) {
-  const qs = buildQS(params)
-  const res = await fetch(`${BASE}${path}?${qs}`)
+  const qs  = buildQS(params)
+  const token = localStorage.getItem(TOKEN_KEY)
+
+  const res = await fetch(`${BASE}${path}?${qs}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+
+  // Token expired or invalid — force logout by clearing storage
+  if (res.status === 401) {
+    localStorage.removeItem(TOKEN_KEY)
+    window.location.reload()   // Redux state will rehydrate as logged-out
+  }
+
   if (!res.ok) {
     const msg = await res.text().catch(() => res.statusText)
     throw new Error(`API ${path} → ${res.status}: ${msg}`)
@@ -33,10 +37,16 @@ async function get(path, params = {}) {
 }
 
 /**
+ * GET /api/analytics/companies
+ * Returns { companies: [{ company_id, company_name }] } — no timeframe filter.
+ * Used to seed the location dropdown.
+ */
+export function getCompanies({ companyIds }) {
+  return get('/companies', { company_ids: companyIds.join(',') })
+}
+
+/**
  * GET /api/analytics/breakdown
- * Returns { rows: [{ company_id, company_name, total_created, total_delivered,
- *   delivered_by_driver, delivered_by_dispatcher, total_failed, total_incomplete,
- *   total_deleted, ontime_percentage, avg_drive_time_minutes, avg_delivery_time_minutes }] }
  */
 export function getBreakdown({ companyIds, timeframe }) {
   return get('/breakdown', {
@@ -47,8 +57,6 @@ export function getBreakdown({ companyIds, timeframe }) {
 
 /**
  * GET /api/analytics/drilldown
- * Returns { metric, stats, page, page_size, total_pages,
- *   orders: [DrilldownOrder] }
  */
 export function getDrilldown({ companyId, metric, timeframe, page = 1, pageSize = 25 }) {
   return get('/drilldown', {
@@ -62,8 +70,6 @@ export function getDrilldown({ companyId, metric, timeframe, page = 1, pageSize 
 
 /**
  * GET /api/analytics/ontime-charts
- * Returns { charts: [{ chart_type, total_orders, buckets: [BucketEntry] }] }
- * chart_type ∈ { pickup, delivery, drive, ontime }
  */
 export function getOntimeCharts({ companyIds, timeframe }) {
   return get('/ontime-charts', {

@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import connect, disconnect
 from app.exceptions import register_exception_handlers
-from app.routers import analytics, health
+from app.routers import analytics, auth, health
 
 logging.basicConfig(
     level=logging.INFO,
@@ -32,4 +32,5 @@ app.add_middleware(
 
 register_exception_handlers(app)
 app.include_router(health.router)
+app.include_router(auth.router)
 app.include_router(analytics.router)

@@ -86,9 +86,6 @@ export default function SummaryCardsRow({ onOntimeClick }) {
             variant="ontime"
             value={loading ? null : fmtDec(s?.ontime_percentage, '%')}
             label="% on-time deliveries"
-            sub="click to see breakdown"
-            clickable
-            onClick={handleOntimeCardClick}
             icon={<ChartIcon />}
           />
           <SummaryCard

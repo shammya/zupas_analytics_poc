@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from clickhouse_connect.driver import Client
 
 from app.database import get_client
+from app.dependencies import get_current_user
 from app.schemas.requests import Timeframe, Metric, ChartTab, parse_company_ids
 from app.schemas.responses import (
     SummaryResponse, BreakdownResponse, DrilldownResponse, OntimeChartsResponse,
@@ -16,6 +17,7 @@ router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 def companies(
     client: Client = Depends(get_client),
     company_ids: list[int] = Depends(parse_company_ids),
+    _: str = Depends(get_current_user),
 ):
     return analytics_service.get_companies(client, company_ids)
 
@@ -25,6 +27,7 @@ def summary(
     client: Client = Depends(get_client),
     company_ids: list[int] = Depends(parse_company_ids),
     timeframe: Timeframe = Query(...),
+    _: str = Depends(get_current_user),
 ):
     return analytics_service.get_summary(client, company_ids, timeframe)
 
@@ -34,6 +37,7 @@ def breakdown(
     client: Client = Depends(get_client),
     company_ids: list[int] = Depends(parse_company_ids),
     timeframe: Timeframe = Query(...),
+    _: str = Depends(get_current_user),
 ):
     return analytics_service.get_breakdown(client, company_ids, timeframe)
 
@@ -46,6 +50,7 @@ def drilldown(
     timeframe: Timeframe = Query(...),
     page: int = Query(1, ge=1),
     page_size: int = Query(25, ge=1, le=100),
+    _: str = Depends(get_current_user),
 ):
     return analytics_service.get_drilldown(
         client, company_id, metric, timeframe, page, page_size
@@ -58,5 +63,6 @@ def ontime_charts(
     company_ids: list[int] = Depends(parse_company_ids),
     timeframe: Timeframe = Query(...),
     tab: ChartTab | None = Query(None),
+    _: str = Depends(get_current_user),
 ):
     return analytics_service.get_ontime_charts(client, company_ids, timeframe, tab)
