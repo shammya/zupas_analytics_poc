@@ -56,7 +56,7 @@ export const loadOntimeCharts = createAsyncThunk(
 // ── Slice ─────────────────────────────────────────────────────────────────────
 
 const initialState = {
-  timeframe:         'this_week',
+  timeframe:         'this_month',
   selectedLocations: [],   // company_id integers; empty = not yet initialised
   companyList:       [],   // [{company_id, company_name}] — populated once for dropdown
 
@@ -165,9 +165,9 @@ const slice = createSlice({
           company_id:   r.company_id,
           company_name: r.company_name,
         }))
-        // Auto-select first 5 on first load
+        // Auto-select all on first load
         if (state.selectedLocations.length === 0 && state.companyList.length > 0) {
-          state.selectedLocations = state.companyList.slice(0, 5).map((c) => c.company_id)
+          state.selectedLocations = state.companyList.map((c) => c.company_id)
         }
       })
       .addCase(loadCompanyList.rejected, (state, { payload }) => {

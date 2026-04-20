@@ -3,103 +3,95 @@ import { selectAggregateSummary } from '../../../store/analyticsSlice'
 import SummaryCard from './SummaryCard'
 import styles from '../styles/SummaryCards.module.css'
 
-const fmt = (v) => (v == null ? '—' : v.toLocaleString())
-const fmtDec = (v, unit = '') => (v == null ? '—' : `${v.toFixed(1)}${unit}`)
+const fmt      = (v) => (v == null ? '—' : v.toLocaleString())
+const fmtDec   = (v, unit = '') => (v == null ? '—' : `${v.toFixed(1)}${unit}`)
 const fmtDuration = (v) => {
   if (v == null) return '—'
-  if (v < 60) return `${v.toFixed(1)} min`
+  if (v < 60) return `${Math.round(v)} min`
   const h = Math.floor(v / 60)
   const m = Math.round(v % 60)
   return `${h}h ${m}m`
 }
 
-export default function SummaryCardsRow({ onOntimeClick }) {
-  const summary  = useSelector(selectAggregateSummary)
-  const loading  = useSelector(
+export default function SummaryCardsRow() {
+  const summary = useSelector(selectAggregateSummary)
+  const loading = useSelector(
     (s) => s.analytics.loading.breakdown || s.analytics.loading.companyList
   )
-  const timeframe         = useSelector((s) => s.analytics.timeframe)
-  const selectedLocations = useSelector((s) => s.analytics.selectedLocations)
-  const breakdownRows     = useSelector((s) => s.analytics.breakdownRows)
-
   const s = summary
 
-  function handleOntimeCardClick() {
-    const ids = selectedLocations.length
-      ? selectedLocations
-      : breakdownRows.map((r) => r.company_id)
-    const label = selectedLocations.length === 0
-      ? 'All Locations'
-      : selectedLocations.length === 1
-      ? (breakdownRows.find((r) => r.company_id === selectedLocations[0])?.company_name ?? '1 store')
-      : `${selectedLocations.length} locations`
-    onOntimeClick({ scopeIds: ids, scopeLabel: label })
-  }
+  const deliveredSub = s ? (
+    <span>
+      <span style={{ color: '#1B9970', fontWeight: 600 }}>{fmt(s.delivered_by_driver)} via driver</span>
+      {' · '}
+      <span style={{ color: '#E07020', fontWeight: 600 }}>{fmt(s.delivered_by_dispatcher)} by dispatcher</span>
+    </span>
+  ) : null
 
   return (
-    <div className={styles.zonesWrap}>
-      {/* Zone 1 — Order Lifecycle */}
-      <div className={styles.zone}>
+    <div className={styles.sectionsWrap}>
+      {/* ORDER LIFECYCLE */}
+      <div className={styles.section}>
+        <div className={styles.sectionLabel}>Order Lifecycle</div>
         <div className={styles.cards}>
           <SummaryCard
             variant="created"
+            title="Created orders"
             value={loading ? null : fmt(s?.total_created)}
-            label="orders placed this period"
+            sub="orders placed this period"
             icon={<PlusCircleIcon />}
           />
           <SummaryCard
             variant="delivered"
+            title="Delivered orders"
             value={loading ? null : fmt(s?.total_delivered)}
-            label="orders fulfilled"
-            sub={
-              s
-                ? `${fmt(s.delivered_by_driver)} via driver · ${fmt(s.delivered_by_dispatcher)} by dispatcher`
-                : null
-            }
+            sub={deliveredSub}
             icon={<CheckIcon />}
           />
           <SummaryCard
             variant="failed"
+            title="Failed orders"
             value={loading ? null : fmt(s?.total_failed)}
-            label="rejected or cancelled by driver"
+            sub="rejected or cancelled by driver"
             icon={<AlertIcon />}
           />
           <SummaryCard
             variant="incomplete"
+            title="Incomplete orders"
             value={loading ? null : fmt(s?.total_incomplete)}
-            label="never assigned to a driver"
+            sub="never assigned to a driver"
             icon={<ClockIcon />}
           />
           <SummaryCard
             variant="deleted"
+            title="Deleted orders"
             value={loading ? null : fmt(s?.total_deleted)}
-            label="removed this period"
+            sub="deleted this period"
             icon={<TrashIcon />}
           />
         </div>
       </div>
 
-      {/* Zone 2 — Quality */}
-      <div className={styles.zone}>
+      {/* QUALITY METRICS */}
+      <div className={styles.section}>
+        <div className={styles.sectionLabel}>Quality Metrics</div>
         <div className={styles.cards}>
           <SummaryCard
             variant="ontime"
+            title="% On-time deliveries"
             value={loading ? null : fmtDec(s?.ontime_percentage, '%')}
-            label="% on-time deliveries"
             icon={<ChartIcon />}
           />
           <SummaryCard
             variant="avgway"
+            title="Avg. on the way"
             value={loading ? null : fmtDuration(s?.avg_drive_time_minutes)}
-            label="avg. on the way"
-            sub="pickup → delivery transit"
             icon={<RouteIcon />}
           />
           <SummaryCard
             variant="avgplace"
+            title="Avg. placement → delivery"
             value={loading ? null : fmtDuration(s?.avg_delivery_time_minutes)}
-            label="avg. placement → delivery"
-            sub="end-to-end per order"
             icon={<TimerIcon />}
           />
         </div>

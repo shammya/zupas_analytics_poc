@@ -1,10 +1,8 @@
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
-  loadCompanyList, loadBreakdown, loadDrilldown, loadOntimeCharts,
-  selectActiveCompanyIds,
+  loadCompanyList, loadBreakdown, loadDrilldown,
   openDrawer, setDrawerPage,
-  openOntimePanel,
 } from '../../store/analyticsSlice'
 import { ALL_COMPANY_IDS } from '../../constants/companies'
 import FilterRow from './FilterRow/FilterRow'
@@ -17,9 +15,7 @@ export default function AnalyticsPage() {
   const dispatch           = useDispatch()
   const timeframe          = useSelector((s) => s.analytics.timeframe)
   const selectedLocations  = useSelector((s) => s.analytics.selectedLocations)
-  const activeIds          = useSelector(selectActiveCompanyIds)
   const drawer             = useSelector((s) => s.analytics.drawer)
-  const ontimeState        = useSelector((s) => s.analytics.ontime)
 
   // Load full company list once on mount (to populate the dropdown with names).
   // Uses a fixed timeframe so we always get names even if today has no orders.
@@ -33,13 +29,6 @@ export default function AnalyticsPage() {
     if (!selectedLocations.length) return
     dispatch(loadBreakdown({ companyIds: selectedLocations, timeframe }))
   }, [dispatch, timeframe, selectedLocations.join(',')])  // eslint-disable-line
-
-  // Load charts when ontime panel opens or scope/timeframe changes
-  useEffect(() => {
-    if (!ontimeState.isOpen) return
-    const ids = ontimeState.scopeIds.length ? ontimeState.scopeIds : activeIds
-    dispatch(loadOntimeCharts({ companyIds: ids, timeframe }))
-  }, [dispatch, ontimeState.isOpen, ontimeState.scopeIds.join(','), timeframe]) // eslint-disable-line
 
   // Load drilldown when drawer opens or page changes
   useEffect(() => {
@@ -57,10 +46,6 @@ export default function AnalyticsPage() {
     dispatch(openDrawer({ companyId, companyName, metric }))
   }
 
-  function handleOntimeClick({ scopeIds, scopeLabel }) {
-    dispatch(openOntimePanel({ scopeIds, scopeLabel }))
-  }
-
   function handleDrawerPageChange(page) {
     dispatch(setDrawerPage(page))
   }
@@ -68,12 +53,9 @@ export default function AnalyticsPage() {
   return (
     <>
       <FilterRow />
-      <SummaryCardsRow onOntimeClick={handleOntimeClick} />
+      <SummaryCardsRow />
       <OntimePanel />
-      <BreakdownTable
-        onCellClick={handleCellClick}
-        onOntimeClick={handleOntimeClick}
-      />
+      <BreakdownTable onCellClick={handleCellClick} />
       <Drawer onPageChange={handleDrawerPageChange} />
     </>
   )

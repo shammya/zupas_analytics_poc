@@ -3,7 +3,7 @@ import styles from '../styles/BreakdownTable.module.css'
 
 const METRICS = ['created', 'delivered', 'failed', 'incomplete', 'deleted']
 
-export default function TableRow({ row, activeMetric, ontimeActive, onCellClick, onOntimeClick }) {
+export default function TableRow({ row, activeMetric, onCellClick }) {
   return (
     <tr className={styles.tr}>
       <td className={styles.colCompany}>

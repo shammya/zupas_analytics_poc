@@ -3,13 +3,12 @@ import { selectVisibleRows } from '../../../store/analyticsSlice'
 import TableRow from './TableRow'
 import styles from '../styles/BreakdownTable.module.css'
 
-export default function BreakdownTable({ onCellClick, onOntimeClick }) {
+export default function BreakdownTable({ onCellClick }) {
   const rows    = useSelector(selectVisibleRows)
   const loading = useSelector(
     (s) => s.analytics.loading.breakdown || s.analytics.loading.companyList
   )
   const drawer  = useSelector((s) => s.analytics.drawer)
-  const ontime  = useSelector((s) => s.analytics.ontime)
 
   return (
     <div className={styles.tableCard}>
@@ -68,11 +67,7 @@ export default function BreakdownTable({ onCellClick, onOntimeClick }) {
                       ? drawer.metric
                       : null
                   }
-                  ontimeActive={
-                    ontime.isOpen && ontime.scopeIds.includes(row.company_id)
-                  }
                   onCellClick={onCellClick}
-                  onOntimeClick={onOntimeClick}
                 />
               ))
             )}
