@@ -1,0 +1,140 @@
+.filterRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--bg);
+  padding: 4px 0 8px;
+}
+
+/* ── Location dropdown ── */
+.locWrap { position: relative; }
+
+.locBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border-md);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  transition: border-color var(--tr), box-shadow var(--tr);
+  white-space: nowrap;
+}
+
+.locBtn:hover { border-color: var(--teal-mid); }
+
+.locBtn svg:last-child {
+  transition: transform var(--tr);
+  opacity: .6;
+}
+.locBtn.open svg:last-child { transform: rotate(180deg); }
+
+.locDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 240px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  animation: fadeDown .15s ease;
+}
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.locSearch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-3);
+}
+
+.locSearch input {
+  border: none;
+  outline: none;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text);
+  background: transparent;
+  flex: 1;
+}
+
+.locList {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+
+.locItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background var(--tr);
+}
+
+.locItem:hover { background: var(--teal-pale); }
+
+.locItem input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--teal);
+  cursor: pointer;
+}
+
+.locEmpty {
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--text-3);
+  font-style: italic;
+}
+
+/* ── Timeframe tabs ── */
+.tfTabs {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border-md);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.tfTab {
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border);
+  transition: background var(--tr), color var(--tr);
+  white-space: nowrap;
+}
+
+.tfTab:last-child { border-right: none; }
+
+.tfTab:hover {
+  background: var(--teal-pale);
+  color: var(--teal-dark);
+}
+
+.tfTab.active {
+  background: var(--teal);
+  color: #fff;
+  font-weight: 600;
+}

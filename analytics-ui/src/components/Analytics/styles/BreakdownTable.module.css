@@ -1,0 +1,175 @@
+.tableCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tableScroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+/* ── Header ── */
+thead th {
+  padding: 10px 14px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+  background: #FAFAFA;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.colCompany { text-align: left !important; min-width: 180px; }
+.metricHead { }
+.pctHead    { }
+.avgHead    { }
+
+.dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+  margin-bottom: 1px;
+}
+
+/* ── Body rows ── */
+.tr {
+  border-bottom: 1px solid var(--border);
+  transition: background var(--tr);
+}
+
+.tr:last-child { border-bottom: none; }
+.tr:hover { background: #FAFBFC; }
+
+td {
+  padding: 11px 14px;
+  vertical-align: middle;
+}
+
+.companyName {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 13px;
+}
+
+/* ── Metric cells ── */
+.metricCell {
+  text-align: right;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  transition: background var(--tr);
+  user-select: none;
+}
+
+.cellVal {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  display: block;
+  font-variant-numeric: tabular-nums;
+}
+
+.cellSub {
+  font-size: 11px;
+  color: var(--text-3);
+  display: block;
+}
+
+/* Metric-specific hover/active colors */
+.cell_created:hover    { background: #EFF4FF; }
+.cell_created.activeCell { background: #DBEAFE; }
+
+.cell_delivered:hover    { background: var(--teal-pale); }
+.cell_delivered.activeCell { background: #C6EFE3; }
+
+.cell_failed:hover    { background: var(--red-pale); }
+.cell_failed.activeCell { background: #FDDADA; }
+
+.cell_incomplete:hover    { background: var(--orange-pale); }
+.cell_incomplete.activeCell { background: #FDDFC4; }
+
+.cell_deleted:hover    { background: var(--slate-pale); }
+.cell_deleted.activeCell { background: #E0E3E8; }
+
+/* ── On-time % cell ── */
+.pctCell {
+  text-align: right;
+  cursor: pointer;
+  transition: background var(--tr);
+  border-radius: var(--radius-sm);
+}
+
+.pctCell:hover { background: var(--teal-pale); }
+.pctCell.activePct { background: var(--teal-pale); }
+
+.pctVal {
+  font-weight: 700;
+  color: var(--teal-dark);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+
+/* ── Avg cell ── */
+.avgCell {
+  text-align: right;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Skeleton ── */
+.skelCell {
+  height: 16px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e8eaed 25%, #f5f6f7 50%, #e8eaed 75%);
+  background-size: 200% 100%;
+  animation: shim 1.2s infinite;
+}
+
+.empty {
+  text-align: center;
+  color: var(--text-3);
+  padding: 32px 0;
+  font-size: 13px;
+}
+
+/* ── Ripple ── */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  background: rgba(0,0,0,.08);
+  transform: translate(-50%, -50%) scale(0);
+  animation: ripple .5s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes ripple {
+  to { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+}
+
+@keyframes shim {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

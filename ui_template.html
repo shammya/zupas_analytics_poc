@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports › Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#1B9970;--teal-mid:#5DCAA5;--teal-pale:#EAF7F2;--teal-dark:#0D6B4F;
+  --amber:#C99A17;--amber-pale:#FDF6E3;
+  --red:#D94040;--red-pale:#FEF0F0;
+  --orange:#E07020;--orange-pale:#FEF3EB;
+  --slate:#6B7A8D;--slate-pale:#F0F2F5;
+  --blue:#2563EB;--blue-pale:#EFF4FF;
+  --bg:#F7F8FA;--surface:#FFFFFF;
+  --border:#E4E7EC;--border-md:#D0D5DD;
+  --text:#111827;--text-2:#4B5563;--text-3:#9CA3AF;
+  --radius:10px;--radius-sm:6px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shadow-lg:0 8px 24px rgba(0,0,0,.1);
+  --nav:220px;--tr:.28s cubic-bezier(.4,0,.2,1);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;display:flex;overflow:hidden;height:100vh}
+
+/* ── NAV ── */
+.nav{width:var(--nav);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.nav-brand{padding:16px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.nav-logo{width:28px;height:28px;background:var(--teal);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;flex-shrink:0}
+.nav-name{font-weight:600;font-size:13px}
+.nav-section{padding:6px 10px 2px;font-size:10.5px;font-weight:600;color:var(--text-3);letter-spacing:.06em;text-transform:uppercase;margin-top:8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;margin:1px 8px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text-2);font-size:13px;transition:all .15s}
+.nav-item:hover{background:var(--slate-pale)}
+.nav-item.active{background:var(--teal-pale);color:var(--teal-dark);font-weight:500}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.7}
+.nav-item.active svg{opacity:1}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;flex-shrink:0}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-2)}
+.breadcrumb b{font-size:17px;font-weight:600;color:var(--text)}
+.breadcrumb .sep{color:var(--text-3);font-size:15px}
+
+.page{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:18px}
+
+/* ── FILTERS ── */
+.filter-row{display:flex;justify-content:space-between;align-items:center;position:relative}
+.loc-btn{display:flex;align-items:center;gap:8px;padding:7px 14px;background:var(--surface);border:1.5px solid var(--border-md);border-radius:var(--radius-sm);font-size:13px;color:var(--text-2);cursor:pointer;min-width:220px;transition:border-color .15s;font-family:inherit}
+.loc-btn:hover,.loc-btn.open{border-color:var(--teal)}
+.loc-btn svg{margin-left:auto;transition:transform .2s}
+.loc-btn.open svg{transform:rotate(180deg)}
+.loc-dropdown{position:absolute;top:calc(100% + 6px);left:0;width:280px;background:var(--surface);border:1.5px solid var(--border-md);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:100;overflow:hidden;display:none}
+.loc-dropdown.open{display:block;animation:fadeDown .15s ease}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.loc-search{padding:10px 12px;border-bottom:1px solid var(--border)}
+.loc-search input{width:100%;border:1px solid var(--border-md);border-radius:var(--radius-sm);padding:6px 10px;font-size:13px;font-family:inherit;outline:none}
+.loc-search input:focus{border-color:var(--teal)}
+.loc-list{max-height:200px;overflow-y:auto;padding:6px 0}
+.loc-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;font-size:13px;transition:background .1s}
+.loc-item:hover{background:var(--slate-pale)}
+.loc-item input[type=checkbox]{width:14px;height:14px;accent-color:var(--teal);cursor:pointer}
+.tf-tabs{display:flex;background:var(--surface);border:1.5px solid var(--border-md);border-radius:var(--radius-sm);overflow:hidden}
+.tf-tab{padding:7px 14px;font-size:13px;color:var(--text-2);cursor:pointer;border-right:1px solid var(--border);transition:all .15s;font-family:inherit;background:none;border-top:none;border-bottom:none;white-space:nowrap}
+.tf-tab:last-child{border-right:none}
+.tf-tab:hover{background:var(--slate-pale);color:var(--text)}
+.tf-tab.active{background:var(--teal-pale);color:var(--teal-dark);font-weight:500}
+
+/* ── SUMMARY STRIP ── */
+.summary-section{display:flex;flex-direction:column;gap:10px}
+.summary-label{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3)}
+.summary-zone{display:flex;gap:10px}
+.sum-card{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;cursor:default;transition:all .2s;position:relative;overflow:hidden}
+.sum-card.clickable{cursor:pointer}
+.sum-card.clickable:hover{border-color:var(--teal-mid);box-shadow:0 0 0 3px var(--teal-pale);transform:translateY(-1px)}
+.sum-card.clickable:active{transform:translateY(0)}
+.sum-card.active-scope{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-pale)}
+.sum-card .sc-label{font-size:11.5px;color:var(--text-2);margin-bottom:6px;font-weight:400}
+.sum-card .sc-val{font-size:26px;font-weight:600;line-height:1;color:var(--text)}
+.sum-card .sc-sub{font-size:11px;color:var(--text-3);margin-top:6px;display:flex;gap:8px}
+.sub-d{color:var(--teal-dark);font-weight:500}
+.sub-p{color:var(--orange);font-weight:500}
+.sum-card .sc-icon{position:absolute;right:14px;top:14px;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;opacity:.12}
+.sum-card .sc-icon svg{width:16px;height:16px}
+.card-created .sc-icon{background:var(--blue);opacity:.1}
+.card-created .sc-val{color:var(--blue)}
+.card-delivered .sc-icon{background:var(--teal);opacity:.12}
+.card-delivered .sc-val{color:var(--teal-dark)}
+.card-failed .sc-icon{background:var(--red);opacity:.1}
+.card-failed .sc-val{color:var(--red)}
+.card-incomplete .sc-icon{background:var(--orange);opacity:.1}
+.card-incomplete .sc-val{color:var(--orange)}
+.card-deleted .sc-icon{background:var(--slate);opacity:.1}
+.card-deleted .sc-val{color:var(--slate)}
+
+/* ── ONTIME PANEL ── */
+.card-ontime-clickable{cursor:pointer}
+.card-ontime-clickable:hover{border-color:var(--teal-mid);box-shadow:0 0 0 3px var(--teal-pale);transform:translateY(-1px)}
+.card-ontime-clickable.panel-open{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-pale);background:var(--teal-pale)}
+.card-ontime-clickable.panel-open .sc-val{color:var(--teal-dark)}
+
+.ontime-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;
+  max-height:0;opacity:0;transition:max-height .45s cubic-bezier(.4,0,.2,1),opacity .3s ease,margin .3s ease;
+  margin-top:0;pointer-events:none}
+.ontime-panel.open{max-height:600px;opacity:1;margin-top:0;pointer-events:all}
+
+.panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 0}
+.panel-breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-3)}
+.panel-breadcrumb .pb-active{color:var(--teal-dark);font-weight:600;font-size:13px}
+.panel-close{width:26px;height:26px;border-radius:50%;border:1px solid var(--border-md);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:13px;transition:all .15s;font-family:inherit}
+.panel-close:hover{background:var(--slate-pale)}
+
+.panel-tabs{display:flex;gap:0;padding:10px 20px 0;border-bottom:1px solid var(--border);margin-top:6px}
+.panel-tab{padding:8px 16px;font-size:13px;color:var(--text-2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-family:inherit;background:none;border-top:none;border-left:none;border-right:none;margin-bottom:-1px}
+.panel-tab:hover{color:var(--teal-dark)}
+.panel-tab.active{color:var(--teal-dark);border-bottom-color:var(--teal);font-weight:500}
+
+.chart-panel-scope{padding:10px 20px 0;font-size:12px;color:var(--text-2);display:flex;align-items:center;gap:8px}
+.chart-panel-scope .scope-tag{display:inline-flex;align-items:center;gap:3px;background:var(--slate-pale);color:var(--text-2);padding:2px 8px;border-radius:20px;font-size:11.5px;font-weight:500}
+
+.chart-grid-4{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:14px 20px 20px}
+.chart-item{display:flex;flex-direction:column;gap:8px}
+.chart-item canvas{width:100% !important}
+.chart-item-title{font-size:11.5px;color:var(--text-2);text-align:center;font-weight:400}
+
+/* loading pulse for charts */
+.chart-placeholder{height:180px;background:linear-gradient(90deg,#F1F3F5 25%,#E5E8ED 50%,#F1F3F5 75%);background-size:200% 100%;animation:shim 1.2s infinite;border-radius:var(--radius-sm)}
+
+.section-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:-4px}
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{padding:10px 16px;text-align:left;font-weight:500;font-size:11.5px;color:var(--text-2);background:#F9FAFB;border-bottom:1px solid var(--border);white-space:nowrap}
+thead th.metric-col{text-align:right;cursor:default}
+thead th .th-inner{display:flex;align-items:center;justify-content:flex-end;gap:5px}
+tbody td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#FAFBFC}
+.company-name{font-weight:500;font-size:13px}
+.metric-cell{text-align:right;font-weight:500;font-family:'DM Mono',monospace;font-size:13px;cursor:pointer;border-radius:var(--radius-sm);transition:all .15s;padding:8px 12px !important}
+.metric-cell:hover{background:var(--teal-pale);color:var(--teal-dark)}
+.metric-cell.active-cell{background:var(--teal-pale);color:var(--teal-dark)}
+.cell-created:hover,.cell-created.active-cell{background:var(--blue-pale);color:var(--blue)}
+.cell-failed:hover,.cell-failed.active-cell{background:var(--red-pale);color:var(--red)}
+.cell-incomplete:hover,.cell-incomplete.active-cell{background:var(--orange-pale);color:var(--orange)}
+.cell-deleted:hover,.cell-deleted.active-cell{background:var(--slate-pale);color:var(--slate)}
+.delivered-sub{font-size:10.5px;color:var(--text-3);font-family:'DM Sans',sans-serif;font-weight:400;display:block}
+.pct-cell{text-align:right;font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--teal-dark);padding:8px 12px !important;cursor:pointer;border-radius:var(--radius-sm);transition:all .15s}
+.pct-cell:hover{background:var(--teal-pale);box-shadow:inset 0 0 0 1px var(--teal-mid)}
+.pct-cell.active-pct{background:var(--teal-pale);box-shadow:inset 0 0 0 1.5px var(--teal);color:var(--teal-dark);font-weight:600}
+.avg-cell{text-align:right;font-family:'DM Mono',monospace;font-size:13px;color:var(--text-2);padding:8px 12px !important}
+
+/* ── DRAWER OVERLAY ── */
+.overlay{position:fixed;inset:0;background:rgba(17,24,39,.15);z-index:40;opacity:0;pointer-events:none;transition:opacity var(--tr)}
+.overlay.show{opacity:1;pointer-events:all}
+
+/* ── DRAWER ── */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:58%;background:var(--surface);box-shadow:-6px 0 32px rgba(0,0,0,.12);z-index:50;display:flex;flex-direction:column;transform:translateX(100%);transition:transform var(--tr)}
+.drawer.open{transform:translateX(0)}
+
+/* drawer header */
+.dh-wrap{flex-shrink:0}
+.dh-context{display:flex;align-items:center;gap:8px;padding:10px 20px 0;font-size:12px;color:var(--text-3)}
+.dh-context span{display:flex;align-items:center;gap:4px}
+.dh-context .sep{color:var(--border-md)}
+.dh-context .crumb-active{color:var(--text-2);font-weight:500}
+.dh-main{padding:12px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.dh-left{display:flex;align-items:flex-start;gap:12px}
+.dh-icon-wrap{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.dh-icon-wrap svg{width:18px;height:18px}
+.dh-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:3px}
+.dh-scope{font-size:12.5px;color:var(--text-2);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.scope-tag{display:inline-flex;align-items:center;gap:3px;background:var(--slate-pale);color:var(--text-2);padding:2px 8px;border-radius:20px;font-size:11.5px;font-weight:500}
+.count-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:12px;font-weight:600;margin-left:4px}
+.close-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--border-md);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:15px;transition:all .15s;flex-shrink:0;font-family:inherit}
+.close-btn:hover{background:var(--slate-pale);color:var(--text)}
+
+/* stats row */
+.dh-stats{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.dstat{flex:1;padding:12px 16px;border-right:1px solid var(--border)}
+.dstat:last-child{border-right:none}
+.dstat .dsv{font-size:18px;font-weight:600;color:var(--text);line-height:1.1;font-family:'DM Mono',monospace}
+.dstat .dsl{font-size:11px;color:var(--text-3);margin-top:2px}
+
+/* drawer body */
+.drawer-body{flex:1;overflow-y:auto}
+.d-table-wrap table{font-size:12.5px}
+.d-table-wrap thead th{font-size:11px;padding:8px 14px}
+.d-table-wrap tbody td{padding:10px 14px}
+
+/* badges */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.badge-driver{background:#EAF7F2;color:var(--teal-dark)}
+.badge-dispatcher{background:#FEF3EB;color:var(--orange)}
+.badge-pickup{background:#EFF4FF;color:var(--blue)}
+.badge-enroute{background:#FDF6E3;color:var(--amber)}
+.badge-atdoor{background:#FEF0F0;color:var(--red)}
+.badge-ontime{background:#EAF7F2;color:var(--teal-dark)}
+.badge-late{background:#FEF0F0;color:var(--red)}
+.badge-unassigned{background:#F0F2F5;color:var(--slate)}
+.badge-assigned{background:#EFF4FF;color:var(--blue)}
+
+/* aging heat */
+.age-fresh{color:var(--teal-dark);font-weight:600;font-family:'DM Mono',monospace}
+.age-warn{color:var(--amber);font-weight:600;font-family:'DM Mono',monospace}
+.age-crit{color:var(--red);font-weight:600;font-family:'DM Mono',monospace}
+.age-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}
+.age-dot.fresh{background:var(--teal)}
+.age-dot.warn{background:var(--amber)}
+.age-dot.crit{background:var(--red)}
+
+/* skeleton */
+.skel{background:linear-gradient(90deg,#F1F3F5 25%,#E5E8ED 50%,#F1F3F5 75%);background-size:200% 100%;animation:shim 1.2s infinite;border-radius:4px;display:inline-block}
+@keyframes shim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* drawer footer */
+.drawer-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.pg-info{font-size:12px;color:var(--text-2)}
+.pg-btns{display:flex;gap:5px}
+.pg-btn{padding:5px 11px;border:1px solid var(--border-md);border-radius:var(--radius-sm);background:none;font-size:12px;cursor:pointer;color:var(--text-2);font-family:inherit;transition:all .15s}
+.pg-btn:hover{background:var(--slate-pale)}
+.pg-btn.cur{background:var(--teal-pale);color:var(--teal-dark);border-color:var(--teal-mid);font-weight:600}
+
+/* ripple */
+@keyframes ripple{0%{transform:scale(0);opacity:.4}100%{transform:scale(2.5);opacity:0}}
+.ripple-el{position:absolute;width:50px;height:50px;background:var(--teal);border-radius:50%;pointer-events:none;animation:ripple .5s ease-out forwards;transform-origin:center}
+
+/* cell pulse animation when drawer opens */
+@keyframes cellPulse{0%,100%{background:var(--teal-pale)}50%{background:#c5eddf}}
+
+.page-dimmed{pointer-events:none}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-logo">S</div>
+    <span class="nav-name">Shipday Enterprise</span>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:8px 0">
+    <div class="nav-section">Operations</div>
+    <div class="nav-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/></svg>Dashboard</div>
+    <div class="nav-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h12M4 10h12M4 14h8"/></svg>Orders</div>
+    <div class="nav-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="8" r="3"/><path d="M4 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>Drivers</div>
+    <div class="nav-section">Insights</div>
+    <div class="nav-item active"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 14l4-5 4 3 4-6 2 2"/><rect x="2" y="2" width="16" height="16" rx="2"/></svg>Reports</div>
+    <div class="nav-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L10 14.5l-4.8 2.5.9-5.4L2.2 7.7l5.4-.8z"/></svg>AI Insights</div>
+    <div class="nav-section">System</div>
+    <div class="nav-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="3"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2"/></svg>Settings</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="breadcrumb">
+      <span>Reports</span>
+      <span class="sep">›</span>
+      <b>Analytics</b>
+    </div>
+  </div>
+
+  <div class="page" id="page">
+
+    <!-- FILTERS -->
+    <div class="filter-row">
+      <div style="position:relative">
+        <button class="loc-btn" id="locBtn" onclick="toggleLoc()">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 2C6.7 2 4 4.7 4 8c0 4.5 6 10 6 10s6-5.5 6-10c0-3.3-2.7-6-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z"/></svg>
+          <span id="locLabel">Select Locations</span>
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l5 5 5-5"/></svg>
+        </button>
+        <div class="loc-dropdown" id="locDropdown">
+          <div class="loc-search"><input type="text" placeholder="Search by store name" id="locSearch" oninput="filterLocs(this.value)"></div>
+          <div class="loc-list" id="locList"></div>
+        </div>
+      </div>
+      <div class="tf-tabs" id="tfTabs">
+        <button class="tf-tab" onclick="setTf(this,'Today')">Today</button>
+        <button class="tf-tab" onclick="setTf(this,'Yesterday')">Yesterday</button>
+        <button class="tf-tab active" onclick="setTf(this,'This Week')">This Week</button>
+        <button class="tf-tab" onclick="setTf(this,'Last Week')">Last Week</button>
+        <button class="tf-tab" onclick="setTf(this,'This Month')">This Month</button>
+        <button class="tf-tab" onclick="setTf(this,'Last Month')">Last Month</button>
+      </div>
+    </div>
+
+    <!-- SUMMARY STRIP -->
+    <div class="summary-section">
+      <div class="summary-label">Order Lifecycle</div>
+      <div class="summary-zone" id="zone1">
+        <div class="sum-card card-created clickable" onclick="openTopCard('created')" id="top-created">
+          <div class="sc-icon" style="background:#3B82F6"><svg viewBox="0 0 20 20" fill="currentColor" style="color:#3B82F6"><path d="M10 3a7 7 0 100 14A7 7 0 0010 3zm1 4H9v2H7v2h2v2h2v-2h2V9h-2V7z"/></svg></div>
+          <div class="sc-label">Created orders</div>
+          <div class="sc-val" id="tv-created">—</div>
+          <div class="sc-sub">orders placed this period</div>
+        </div>
+        <div class="sum-card card-delivered clickable" onclick="openTopCard('delivered')" id="top-delivered">
+          <div class="sc-icon" style="background:var(--teal)"><svg viewBox="0 0 20 20" fill="currentColor" style="color:var(--teal)"><path d="M16.7 5.3l-8 8-3-3L4.3 11.7l4 4 9.4-9.4z"/></svg></div>
+          <div class="sc-label">Delivered orders</div>
+          <div class="sc-val" id="tv-delivered">—</div>
+          <div class="sc-sub"><span class="sub-d" id="tv-driver">—</span>&nbsp;·&nbsp;<span class="sub-p" id="tv-disp">—</span></div>
+        </div>
+        <div class="sum-card card-failed clickable" onclick="openTopCard('failed')" id="top-failed">
+          <div class="sc-icon" style="background:var(--red)"><svg viewBox="0 0 20 20" fill="currentColor" style="color:var(--red)"><path d="M10 3a7 7 0 100 14A7 7 0 0010 3zm1 5H9v4h2V8zm0 5H9v2h2v-2z"/></svg></div>
+          <div class="sc-label">Failed orders</div>
+          <div class="sc-val" id="tv-failed">—</div>
+          <div class="sc-sub">rejected or cancelled by driver</div>
+        </div>
+        <div class="sum-card card-incomplete clickable" onclick="openTopCard('incomplete')" id="top-incomplete">
+          <div class="sc-icon" style="background:var(--orange)"><svg viewBox="0 0 20 20" fill="currentColor" style="color:var(--orange)"><path d="M10 3a7 7 0 100 14A7 7 0 0010 3zm0 2a5 5 0 110 10A5 5 0 0110 5zm-1 3v4h4v-2h-2V8H9z"/></svg></div>
+          <div class="sc-label">Incomplete orders</div>
+          <div class="sc-val" id="tv-incomplete">—</div>
+          <div class="sc-sub">never assigned to a driver</div>
+        </div>
+        <div class="sum-card card-deleted clickable" onclick="openTopCard('deleted')" id="top-deleted">
+          <div class="sc-icon" style="background:var(--slate)"><svg viewBox="0 0 20 20" fill="currentColor" style="color:var(--slate)"><path d="M8 4h4l1 2h3v2H4V6h3l1-2zm-2 5h8l-1 8H7L6 9z"/></svg></div>
+          <div class="sc-label">Deleted orders</div>
+          <div class="sc-val" id="tv-deleted">—</div>
+          <div class="sc-sub">removed this period</div>
+        </div>
+      </div>
+
+      <div class="summary-label" style="margin-top:4px">Quality Metrics</div>
+      <div class="summary-zone" id="zone2">
+        <div class="sum-card card-ontime-clickable" id="card-ontime-top" onclick="toggleOntimePanel(this)" style="flex:1.2">
+          <div class="sc-label">% On-time deliveries</div>
+          <div class="sc-val" id="tv-ontime" style="color:var(--teal-dark)">—</div>
+          <div class="sc-sub" style="display:flex;align-items:center;gap:4px">
+            <svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="var(--teal)" stroke-width="2"><polyline points="4,12 8,8 12,11 16,5"/></svg>
+            click to see breakdown
+          </div>
+        </div>
+        <div class="sum-card" style="flex:1.2">
+          <div class="sc-label">Avg. on the way</div>
+          <div class="sc-val" id="tv-avgway">—</div>
+          <div class="sc-sub">pickup → delivery transit</div>
+        </div>
+        <div class="sum-card" style="flex:1.2">
+          <div class="sc-label">Avg. placement → delivery</div>
+          <div class="sc-val" id="tv-avgplace">—</div>
+          <div class="sc-sub">end-to-end per order</div>
+        </div>
+        <div style="flex:2.4"></div>
+      </div>
+
+      <!-- ON-TIME BREAKDOWN PANEL -->
+      <div class="ontime-panel" id="ontimePanel">
+        <div class="panel-header">
+          <div class="panel-breadcrumb">
+            <span>Analytics</span>
+            <span>›</span>
+            <span id="panelTimeframe">This Week</span>
+            <span>›</span>
+            <span class="pb-active">On-time Delivery Breakdown</span>
+          </div>
+          <button class="panel-close" onclick="closeOntimePanel()">✕</button>
+        </div>
+        <div class="chart-panel-scope" id="panelScope"></div>
+        <div class="panel-tabs">
+          <button class="panel-tab active" onclick="switchPanelTab(this,'ontime')">On-time Deliveries</button>
+          <button class="panel-tab" onclick="switchPanelTab(this,'delivery')">Delivery Times</button>
+        </div>
+        <div class="chart-grid-4" id="chartGrid4">
+          <div class="chart-item"><div class="chart-placeholder" id="ph0"></div><div class="chart-item-title">Placement to Pick Up Time (excluding scheduled orders)</div></div>
+          <div class="chart-item"><div class="chart-placeholder" id="ph1"></div><div class="chart-item-title">Placement to Delivery Time (excluding scheduled orders)</div></div>
+          <div class="chart-item"><div class="chart-placeholder" id="ph2"></div><div class="chart-item-title">Drive time (pickup to delivery)</div></div>
+          <div class="chart-item"><div class="chart-placeholder" id="ph3"></div><div class="chart-item-title">On-time Deliveries</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BREAKDOWN TABLE -->
+    <div>
+      <div class="section-title">Breakdown by Companies</div>
+    </div>
+    <div class="table-card">
+      <div class="table-scroll">
+        <table id="mainTable">
+          <thead>
+            <tr>
+              <th style="min-width:180px">Company</th>
+              <th class="metric-col" style="color:var(--blue)"><div class="th-inner"><svg width="12" height="12" viewBox="0 0 20 20" fill="var(--blue)"><path d="M10 3a7 7 0 100 14A7 7 0 0010 3zm1 4H9v2H7v2h2v2h2v-2h2V9h-2V7z"/></svg>Created</div></th>
+              <th class="metric-col" style="color:var(--teal-dark)"><div class="th-inner"><svg width="12" height="12" viewBox="0 0 20 20" fill="var(--teal)"><path d="M16.7 5.3l-8 8-3-3L4.3 11.7l4 4 9.4-9.4z"/></svg>Delivered</div></th>
+              <th class="metric-col" style="color:var(--red)"><div class="th-inner"><svg width="12" height="12" viewBox="0 0 20 20" fill="var(--red)"><path d="M10 3a7 7 0 100 14A7 7 0 0010 3zm1 5H9v4h2V8zm0 5H9v2h2v-2z"/></svg>Failed</div></th>
+              <th class="metric-col" style="color:var(--orange)"><div class="th-inner"><svg width="12" height="12" viewBox="0 0 20 20" fill="var(--orange)"><circle cx="10" cy="10" r="7"/><path d="M10 6v5l3 3" stroke="#fff" stroke-width="1.5" fill="none"/></svg>Incomplete</div></th>
+              <th class="metric-col" style="color:var(--slate)"><div class="th-inner"><svg width="12" height="12" viewBox="0 0 20 20" fill="var(--slate)"><path d="M8 4h4l1 2h3v2H4V6h3l1-2zm-2 5h8l-1 8H7L6 9z"/></svg>Deleted</div></th>
+              <th class="metric-col"><div class="th-inner">% On-time</div></th>
+              <th class="metric-col"><div class="th-inner">Avg. on the way</div></th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /page -->
+</div><!-- /main -->
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeDrawer()"></div>
+
+<!-- DRAWER -->
+<div class="drawer" id="drawer">
+  <div class="dh-wrap">
+    <div class="dh-context" id="dhContext"></div>
+    <div class="dh-main">
+      <div class="dh-left">
+        <div class="dh-icon-wrap" id="dhIconWrap"></div>
+        <div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="dh-title" id="dhTitle"></div>
+            <span class="count-badge" id="dhBadge"></span>
+          </div>
+          <div class="dh-scope" id="dhScope"></div>
+        </div>
+      </div>
+      <button class="close-btn" onclick="closeDrawer()" title="Close (Esc)">✕</button>
+    </div>
+    <div class="dh-stats" id="dhStats"></div>
+  </div>
+  <div class="drawer-body d-table-wrap" id="drawerBody"></div>
+  <div class="drawer-footer">
+    <span class="pg-info" id="pgInfo"></span>
+    <div class="pg-btns" id="pgBtns"></div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ─────────────────────────────────────────────────────────────────────
+const LOCATIONS = ['Café Zupas - Edina','Café Zupas - Provo','Café Zupas - Camelback','Café Zupas - 5600W','Café Zupas - Richfield','Café Zupas - U of Minnesota','Café Zupas - Woodbury'];
+const SELECTED_LOCS = new Set(['Café Zupas - Edina']);
+
+const COMPANIES = [
+  {id:'edina',   name:'Café Zupas - Edina',      created:124, delivered:98,  driver:91,  disp:7,  failed:11, incomplete:9,  deleted:6, ontime:75.0,  avgway:11},
+  {id:'provo',   name:'Café Zupas - Provo',       created:89,  delivered:78,  driver:78,  disp:0,  failed:6,  incomplete:3,  deleted:2, ontime:100.0, avgway:22},
+  {id:'camel',   name:'Café Zupas - Camelback',   created:167, delivered:131, driver:119, disp:12, failed:18, incomplete:12, deleted:6, ontime:79.6,  avgway:24},
+  {id:'w5600',   name:'Café Zupas - 5600W',       created:54,  delivered:43,  driver:40,  disp:3,  failed:7,  incomplete:3,  deleted:1, ontime:81.8,  avgway:10},
+  {id:'rich',    name:'Café Zupas - Richfield',   created:73,  delivered:59,  driver:55,  disp:4,  failed:8,  incomplete:5,  deleted:1, ontime:83.1,  avgway:18},
+];
+
+const CUSTOMERS=['Mia Reynolds','Jake Turner','Sofia Navarro','Omar Khalid','Priya Patel','Leo Zhang','Anna Kowalski','Carlos Rivera','Emily Stone','Ravi Sharma','Hannah Brooks','Noah Kim'];
+const DRIVERS=['Chris Valdez','Alicia Morse','Devon Hill','Samir Osei','Tara Flynn','Marcus Webb','Jin Park','Lena Bauer'];
+const DISPATCHERS=['Alex Morgan (Dispatch)','Sam Rivera (Dispatch)','Jordan Lee (Dispatch)'];
+const ZONES=['Zone A - North','Zone B - Central','Zone C - South','Zone D - East','Zone E - West'];
+const FAIL_REASONS=['Driver unavailable','Vehicle breakdown','Customer unreachable','Address not found','Order cancelled by customer','Restaurant not ready','Weather conditions'];
+const FAIL_STAGES=['pickup','en_route','at_door'];
+const DEL_STAGES=['created','assigned','picked_up'];
+const DEL_BY=['Alex Morgan','Sam Rivera','Jordan Lee','Lisa Chen','Mike Torres'];
+const DEL_ROLES=['Dispatcher','Dispatcher','Dispatcher','Manager','Manager'];
+
+let activeTimeframe = 'This Week';
+let drawerState = null;
+const PAGE_SIZE = 8;
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderLocList();
+  renderAll();
+  document.addEventListener('keydown', e => { if(e.key==='Escape') closeDrawer(); });
+  document.getElementById('locSearch').addEventListener('click', e => e.stopPropagation());
+});
+
+document.addEventListener('click', e => {
+  const btn = document.getElementById('locBtn');
+  const dd = document.getElementById('locDropdown');
+  if(!btn.contains(e.target) && !dd.contains(e.target)) closeLoc();
+});
+
+// ─── LOCATION FILTER ─────────────────────────────────────────────────────────
+function renderLocList(filter='') {
+  const list = document.getElementById('locList');
+  list.innerHTML = '';
+  const allItem = document.createElement('div');
+  allItem.className = 'loc-item';
+  allItem.innerHTML = `<input type="checkbox" id="agg-all" ${SELECTED_LOCS.size===0?'checked':''}> <label for="agg-all" style="cursor:pointer">Aggregate for all stores</label>`;
+  allItem.querySelector('input').onchange = e => {
+    if(e.target.checked) SELECTED_LOCS.clear(); else SELECTED_LOCS.add('__none__');
+    updateLocLabel(); renderAll();
+  };
+  list.appendChild(allItem);
+  LOCATIONS.filter(l => l.toLowerCase().includes(filter.toLowerCase())).forEach(loc => {
+    const d = document.createElement('div'); d.className='loc-item';
+    const id = 'loc-'+loc.replace(/\s+/g,'-');
+    d.innerHTML = `<input type="checkbox" id="${id}" ${SELECTED_LOCS.has(loc)?'checked':''}> <label for="${id}" style="cursor:pointer">${loc}</label>`;
+    d.querySelector('input').onchange = e => {
+      if(e.target.checked) SELECTED_LOCS.add(loc); else SELECTED_LOCS.delete(loc);
+      updateLocLabel(); renderAll();
+    };
+    list.appendChild(d);
+  });
+}
+function filterLocs(v) { renderLocList(v); }
+function toggleLoc() { document.getElementById('locBtn').classList.toggle('open'); document.getElementById('locDropdown').classList.toggle('open'); }
+function closeLoc() { document.getElementById('locBtn').classList.remove('open'); document.getElementById('locDropdown').classList.remove('open'); }
+function updateLocLabel() {
+  const lbl = document.getElementById('locLabel');
+  if(SELECTED_LOCS.size===0) lbl.textContent='All Locations';
+  else if(SELECTED_LOCS.size===1) lbl.textContent=[...SELECTED_LOCS][0];
+  else lbl.textContent=`${SELECTED_LOCS.size} locations selected`;
+}
+
+// ─── SINGLE SOURCE OF TRUTH ───────────────────────────────────────────────────
+// All renders derive from this. Mirrors how your React state + selectors work.
+function getVisibleCompanies() {
+  if(SELECTED_LOCS.size===0) return COMPANIES;
+  return COMPANIES.filter(c => [...SELECTED_LOCS].some(s => c.name===s || c.name.includes(s.replace('Café Zupas - ',''))));
+}
+
+// Compute aggregate totals from visible companies only
+function computeAggregate(companies) {
+  if(companies.length === 0) return null;
+  const sum = companies.reduce((acc, c) => ({
+    created:    acc.created    + c.created,
+    delivered:  acc.delivered  + c.delivered,
+    driver:     acc.driver     + c.driver,
+    disp:       acc.disp       + c.disp,
+    failed:     acc.failed     + c.failed,
+    incomplete: acc.incomplete + c.incomplete,
+    deleted:    acc.deleted    + c.deleted,
+    // weighted sums for averages
+    ontimeSum:  acc.ontimeSum  + c.ontime * c.delivered,
+    avgwaySum:  acc.avgwaySum  + c.avgway * c.delivered,
+    avgplaceSum:acc.avgplaceSum+ (c.avgway + 752) * c.delivered, // mock placement→delivery
+  }), {created:0,delivered:0,driver:0,disp:0,failed:0,incomplete:0,deleted:0,ontimeSum:0,avgwaySum:0,avgplaceSum:0});
+
+  return {
+    ...sum,
+    ontime:   sum.delivered > 0 ? sum.ontimeSum  / sum.delivered : 0,
+    avgway:   sum.delivered > 0 ? sum.avgwaySum   / sum.delivered : 0,
+    avgplace: sum.delivered > 0 ? sum.avgplaceSum / sum.delivered : 0,
+  };
+}
+
+// ─── RENDER SUMMARY CARDS ─────────────────────────────────────────────────────
+function renderSummaryCards() {
+  const companies = getVisibleCompanies();
+  const agg = computeAggregate(companies);
+  if(!agg) {
+    ['created','delivered','failed','incomplete','deleted'].forEach(k => {
+      const el = document.getElementById('tv-'+k);
+      if(el) el.textContent = '—';
+    });
+    document.getElementById('tv-driver').textContent = '—';
+    document.getElementById('tv-disp').textContent = '—';
+    document.getElementById('tv-ontime').textContent = '—';
+    document.getElementById('tv-avgway').textContent = '—';
+    document.getElementById('tv-avgplace').textContent = '—';
+    return;
+  }
+  // Animate value change with a brief fade
+  const animUpdate = (id, val) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.style.transition = 'opacity .15s';
+    el.style.opacity = '0';
+    setTimeout(() => { el.textContent = val; el.style.opacity = '1'; }, 150);
+  };
+  animUpdate('tv-created',    agg.created.toLocaleString());
+  animUpdate('tv-delivered',  agg.delivered.toLocaleString());
+  animUpdate('tv-driver',     agg.driver.toLocaleString() + ' via driver');
+  animUpdate('tv-disp',       agg.disp.toLocaleString() + ' by dispatcher');
+  animUpdate('tv-failed',     agg.failed.toLocaleString());
+  animUpdate('tv-incomplete', agg.incomplete.toLocaleString());
+  animUpdate('tv-deleted',    agg.deleted.toLocaleString());
+  animUpdate('tv-ontime',     agg.ontime.toFixed(1) + '%');
+  animUpdate('tv-avgway',     Math.round(agg.avgway) + ' min');
+  animUpdate('tv-avgplace',   Math.round(agg.avgplace) + ' min');
+}
+
+// ─── SCOPE HTML HELPER ───────────────────────────────────────────────────────
+function buildScopeHTML(isAggregate, scopeLabel) {
+  return `
+    ${isAggregate ? '<span style="font-size:11.5px;background:#EFF4FF;color:#1D4ED8;padding:2px 8px;border-radius:20px;font-weight:500">⊕ Aggregate view</span>' : ''}
+    <span class="scope-tag">
+      <svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2C6.7 2 4 4.7 4 8c0 4.5 6 10 6 10s6-5.5 6-10c0-3.3-2.7-6-6-6z"/></svg>
+      ${scopeLabel}
+    </span>
+    <span style="color:var(--text-3)">·</span>
+    <span class="scope-tag">
+      <svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M7 2v4M13 2v4M3 9h14"/></svg>
+      ${activeTimeframe}
+    </span>`;
+}
+
+// ─── RENDER ALL — entry point for any state change ────────────────────────────
+function renderAll() {
+  renderSummaryCards();
+  renderTable();
+  // If the aggregate panel is open, refresh its scope label + charts
+  if(panelOpen && panelScopeId === null) {
+    const locLabel = document.getElementById('locLabel').textContent;
+    document.getElementById('panelScope').innerHTML = buildScopeHTML(true, locLabel);
+    document.getElementById('panelTimeframe').textContent = activeTimeframe;
+    destroyCharts();
+    showChartPlaceholders();
+    setTimeout(() => buildPanelCharts(activePanelTab), 300);
+  }
+  // If a company panel is open but that company got deselected, close it
+  if(panelOpen && panelScopeId !== null) {
+    const still = getVisibleCompanies().find(c => c.id === panelScopeId);
+    if(!still) closeOntimePanel();
+  }
+  // If a drawer is open for a company that got deselected, close it
+  if(drawerState && drawerState.company) {
+    const still = getVisibleCompanies().find(c => c.id === drawerState.company?.id);
+    if(!still) closeDrawer();
+  }
+}
+
+// ─── TIMEFRAME ────────────────────────────────────────────────────────────────
+function setTf(el, name) {
+  document.querySelectorAll('.tf-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  activeTimeframe = name;
+  if(drawerState) closeDrawer();
+  if(panelOpen) closeOntimePanel();
+  renderAll();
+}
+
+// ─── TABLE RENDER ─────────────────────────────────────────────────────────────
+function renderTable() {
+  const rows = getVisibleCompanies();
+  if(rows.length === 0) {
+    document.getElementById('tableBody').innerHTML =
+      `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-3);font-size:13px">No companies match the selected location filter.</td></tr>`;
+    return;
+  }
+  document.getElementById('tableBody').innerHTML = rows.map(c => `
+    <tr>
+      <td><div class="company-name">${c.name}</div></td>
+      <td class="metric-cell cell-created" onclick="openCell(event,'created','${c.id}')" data-company="${c.id}" data-metric="created">${c.created}</td>
+      <td class="metric-cell" onclick="openCell(event,'delivered','${c.id}')" data-company="${c.id}" data-metric="delivered">
+        ${c.delivered}
+        <span class="delivered-sub">${c.driver}d · ${c.disp}p</span>
+      </td>
+      <td class="metric-cell cell-failed" onclick="openCell(event,'failed','${c.id}')" data-company="${c.id}" data-metric="failed">${c.failed}</td>
+      <td class="metric-cell cell-incomplete" onclick="openCell(event,'incomplete','${c.id}')" data-company="${c.id}" data-metric="incomplete">${c.incomplete}</td>
+      <td class="metric-cell cell-deleted" onclick="openCell(event,'deleted','${c.id}')" data-company="${c.id}" data-metric="deleted">${c.deleted}</td>
+      <td class="pct-cell" onclick="openOntimePanelFor('${c.id}',this)" data-company="${c.id}">${c.ontime.toFixed(1)}%</td>
+      <td class="avg-cell">${c.avgway} min</td>
+    </tr>`).join('');
+}
+
+// ─── METRIC CONFIG ────────────────────────────────────────────────────────────
+const METRIC_CONFIG = {
+  created:{
+    label:'Created Orders', color:'#3B82F6', paleBg:'#EFF4FF', icon:`<svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 3a7 7 0 100 14A7 7 0 0010 3zm1 4H9v2H7v2h2v2h2v-2h2V9h-2V7z"/></svg>`,
+    stats: c => [
+      {v:c.created, l:'Total created'}, {v:c.delivered, l:'Delivered'}, {v:c.failed, l:'Failed'}, {v:c.incomplete, l:'Still unassigned'}
+    ],
+    headers:['Order #','Customer','Zone','Placed at','Promised by','Assigned to','Status'],
+    genRow: (i,c) => {
+      const placed = rndTime(8,17); const promised = addMin(placed,40+rndInt(30));
+      const assigned = rndInt(3)>0 ? DRIVERS[i%DRIVERS.length] : null;
+      return [ord(i,c), CUSTOMERS[i%CUSTOMERS.length], ZONES[i%ZONES.length], placed, promised,
+        assigned ? `<span style="font-size:12px">${assigned}</span>` : `<span class="badge badge-unassigned">Unassigned</span>`,
+        assigned ? `<span class="badge badge-assigned">Assigned</span>` : `<span class="badge badge-unassigned">Pending</span>`];
+    }
+  },
+  delivered:{
+    label:'Delivered Orders', color:'#0D6B4F', paleBg:'#EAF7F2', icon:`<svg viewBox="0 0 20 20" fill="currentColor"><path d="M16.7 5.3l-8 8-3-3L4.3 11.7l4 4 9.4-9.4z"/></svg>`,
+    stats: c => [
+      {v:c.delivered, l:'Total delivered'}, {v:c.driver, l:'By driver app'}, {v:c.disp, l:'By dispatcher'}, {v:c.ontime.toFixed(1)+'%', l:'On-time rate'}
+    ],
+    headers:['Order #','Customer','Placed at','Delivered at','Time taken','Completed by','Driver','Amount'],
+    genRow: (i,c) => {
+      const placed = rndTime(8,15); const del = addMin(placed,30+rndInt(60));
+      const isDisp = (i===2||i===5) && c.disp>0;
+      const mins = timeDiff(placed,del);
+      return [ord(i,c), CUSTOMERS[i%CUSTOMERS.length], placed, del, mins+' min',
+        isDisp ? `<span class="badge badge-dispatcher">Dispatcher</span>` : `<span class="badge badge-driver">Driver App</span>`,
+        isDisp ? DISPATCHERS[i%DISPATCHERS.length] : DRIVERS[i%DRIVERS.length],
+        '$'+(18+rndInt(42)).toFixed(2)];
+    }
+  },
+  failed:{
+    label:'Failed Orders', color:'#D94040', paleBg:'#FEF0F0', icon:`<svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 3a7 7 0 100 14A7 7 0 0010 3zm1 5H9v4h2V8zm0 5H9v2h2v-2z"/></svg>`,
+    stats: c => [
+      {v:c.failed, l:'Total failed'}, {v:((c.failed/c.created)*100).toFixed(1)+'%', l:'Fail rate'}, {v:'Pickup', l:'Most common stage'}, {v:'No show', l:'Top reason'}
+    ],
+    headers:['Order #','Customer','Driver','Assigned at','Failed at','Stage','Reason'],
+    genRow: (i,c) => {
+      const assigned = rndTime(9,14); const failed = addMin(assigned,5+rndInt(25));
+      const stage = FAIL_STAGES[i%FAIL_STAGES.length];
+      const stageBadge = stage==='pickup'?`<span class="badge badge-pickup">Pickup</span>`:stage==='en_route'?`<span class="badge badge-enroute">En route</span>`:`<span class="badge badge-atdoor">At door</span>`;
+      return [ord(i,c), CUSTOMERS[i%CUSTOMERS.length], DRIVERS[i%DRIVERS.length], assigned, failed, stageBadge, FAIL_REASONS[i%FAIL_REASONS.length]];
+    }
+  },
+  incomplete:{
+    label:'Incomplete Orders', color:'#E07020', paleBg:'#FEF3EB', icon:`<svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="7"/><path d="M10 6v5l3 3" stroke="#fff" stroke-width="1.5" fill="none"/></svg>`,
+    stats: c => [
+      {v:c.incomplete, l:'Unassigned orders'}, {v:'2h 14m', l:'Avg. waiting time'}, {v:'3', l:'Critical (>3h wait)'}, {v:ZONES[0], l:'Hotspot zone'}
+    ],
+    headers:['Order #','Customer','Placed at','Promised by','Waiting','Zone','Priority'],
+    genRow: (i,c) => {
+      const placed = rndTime(7,12); const promised = addMin(placed,45+rndInt(30));
+      const ages = [['14 min','fresh'],['1h 22m','fresh'],['2h 45m','warn'],['4h 08m','crit'],['38 min','fresh'],['3h 17m','crit'],['1h 51m','warn'],['55 min','fresh']];
+      const [ageStr, heatClass] = ages[i % ages.length];
+      const ageDot = `<span class="age-dot ${heatClass}"></span>`;
+      const ageEl = `<span class="age-${heatClass==='fresh'?'fresh':heatClass==='warn'?'warn':'crit'}">${ageDot}${ageStr}</span>`;
+      const prio = heatClass==='crit'?`<span class="badge badge-atdoor">High</span>`:heatClass==='warn'?`<span class="badge badge-enroute">Medium</span>`:`<span class="badge badge-driver">Normal</span>`;
+      return [ord(i,c), CUSTOMERS[i%CUSTOMERS.length], placed, promised, ageEl, ZONES[i%ZONES.length], prio];
+    }
+  },
+  deleted:{
+    label:'Deleted Orders', color:'#6B7A8D', paleBg:'#F0F2F5', icon:`<svg viewBox="0 0 20 20" fill="currentColor"><path d="M8 4h4l1 2h3v2H4V6h3l1-2zm-2 5h8l-1 8H7L6 9z"/></svg>`,
+    stats: c => [
+      {v:c.deleted, l:'Total deleted'}, {v:'Dispatcher', l:'Deleted by (most)'}, {v:'Created', l:'Stage at deletion'}, {v:(c.deleted/c.created*100).toFixed(1)+'%', l:'Deletion rate'}
+    ],
+    headers:['Order #','Customer','Placed at','Deleted at','Deleted by','Role','Stage at deletion'],
+    genRow: (i,c) => {
+      const placed = rndTime(8,16); const deleted = addMin(placed,3+rndInt(40));
+      const byIdx = i % DEL_BY.length;
+      const stage = DEL_STAGES[i%DEL_STAGES.length];
+      const stageBadge = stage==='created'?`<span class="badge badge-unassigned">Created</span>`:stage==='assigned'?`<span class="badge badge-assigned">Assigned</span>`:`<span class="badge badge-driver">Picked up</span>`;
+      return [ord(i,c), CUSTOMERS[i%CUSTOMERS.length], placed, deleted, DEL_BY[byIdx], DEL_ROLES[byIdx], stageBadge];
+    }
+  }
+};
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function rndInt(n){return Math.floor(Math.random()*n)}
+function rndTime(h1,h2){const h=h1+rndInt(h2-h1);const m=rndInt(60);const s=h>=12?'PM':'AM';return `${h%12||12}:${String(m).padStart(2,'0')} ${s}`}
+function addMin(t,m){const [hm,s]=t.split(' ');const [h,min]=hm.split(':').map(Number);const base=h%12+(s==='PM'?12:0);const total=base*60+Number(min)+m;const nh=Math.floor(total/60)%24;const nm=total%60;const ns=nh>=12?'PM':'AM';return `${nh%12||12}:${String(nm).padStart(2,'0')} ${ns}`}
+function timeDiff(t1,t2){return 30+rndInt(30)}
+function ord(i,c){return `<span style="font-family:'DM Mono',monospace;font-weight:500;font-size:12px;color:var(--teal-dark)">#${10000+i*7+c.created%100}</span>`}
+
+// ─── OPEN DRAWER (from top card) ─────────────────────────────────────────────
+function openTopCard(metric) {
+  const agg = computeAggregate(getVisibleCompanies());
+  if(!agg) return;
+  const locLabel = document.getElementById('locLabel').textContent;
+  openDrawerCore(metric, null, agg, locLabel);
+  document.querySelectorAll('.sum-card.clickable').forEach(c=>c.classList.remove('active-scope'));
+  document.getElementById('top-'+metric).classList.add('active-scope');
+}
+
+// ─── OPEN DRAWER (from table cell) ────────────────────────────────────────────
+function openCell(evt, metric, companyId) {
+  const company = COMPANIES.find(c=>c.id===companyId);
+  // ripple
+  const cell = evt.currentTarget;
+  const r = document.createElement('span');
+  r.className='ripple-el';
+  const rect=cell.getBoundingClientRect();
+  r.style.cssText=`left:${evt.clientX-rect.left-25}px;top:${evt.clientY-rect.top-25}px`;
+  cell.style.position='relative';cell.style.overflow='hidden';
+  cell.appendChild(r); setTimeout(()=>r.remove(),600);
+  // clear previous active cells
+  document.querySelectorAll('.metric-cell').forEach(c=>c.classList.remove('active-cell'));
+  cell.classList.add('active-cell');
+  document.querySelectorAll('.sum-card.clickable').forEach(c=>c.classList.remove('active-scope'));
+  openDrawerCore(metric, company, company, company.name);
+}
+
+function openDrawerCore(metric, company, data, scopeName) {
+  const cfg = METRIC_CONFIG[metric];
+  const count = data[metric];
+  drawerState = {metric, company, data, scopeName, page:1, cfg, count};
+
+  // CONTEXT BREADCRUMB
+  document.getElementById('dhContext').innerHTML =
+    `<span>Analytics</span><span class="sep">›</span><span>${activeTimeframe}</span><span class="sep">›</span><span>${scopeName==='All Locations'?'All Locations':scopeName.replace('Café Zupas - ','')}</span><span class="sep">›</span><span class="crumb-active">${cfg.label}</span>`;
+
+  // ICON
+  const iw = document.getElementById('dhIconWrap');
+  iw.style.background = cfg.paleBg; iw.style.color = cfg.color;
+  iw.innerHTML = cfg.icon;
+
+  // TITLE + BADGE
+  document.getElementById('dhTitle').textContent = cfg.label;
+  const badge = document.getElementById('dhBadge');
+  badge.textContent = count; badge.style.background = cfg.paleBg; badge.style.color = cfg.color;
+
+  // SCOPE LINE
+  document.getElementById('dhScope').innerHTML =
+    `<span class="scope-tag"><svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2C6.7 2 4 4.7 4 8c0 4.5 6 10 6 10s6-5.5 6-10c0-3.3-2.7-6-6-6z"/></svg>${scopeName}</span>
+     <span style="color:var(--text-3)">·</span>
+     <span class="scope-tag"><svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M7 2v4M13 2v4M3 9h14"/></svg>${activeTimeframe}</span>`;
+
+  // STATS
+  const stats = cfg.stats(data);
+  document.getElementById('dhStats').innerHTML = stats.map(s=>`
+    <div class="dstat">
+      <div class="dsv">${s.v}</div>
+      <div class="dsl">${s.l}</div>
+    </div>`).join('');
+
+  // SHOW SKELETON
+  showSkeleton(cfg.headers.length);
+  // Open drawer
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('drawer').classList.add('open');
+  // Load data after delay
+  setTimeout(()=>renderDrawerTable(1), 520);
+}
+
+function showSkeleton(cols) {
+  const rows = Array(6).fill(`<tr>${Array(cols).fill(`<td><span class="skel" style="width:${50+Math.random()*30}%;height:12px"></span></td>`).join('')}</tr>`).join('');
+  document.getElementById('drawerBody').innerHTML = `<table><thead><tr>${Array(cols).fill('<th><span class="skel" style="width:60%;height:11px"></span></th>').join('')}</tr></thead><tbody>${rows}</tbody></table>`;
+  document.getElementById('pgInfo').textContent='';
+  document.getElementById('pgBtns').innerHTML='';
+}
+
+function renderDrawerTable(page) {
+  if(!drawerState) return;
+  const {cfg, data, count} = drawerState;
+  drawerState.page = page;
+  const total = count || 6;
+  const start=(page-1)*PAGE_SIZE, end=Math.min(start+PAGE_SIZE,total);
+  const rows = [];
+  for(let i=start;i<end;i++) rows.push(cfg.genRow(i, data));
+  document.getElementById('drawerBody').innerHTML = `
+    <table>
+      <thead><tr>${cfg.headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+      <tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>
+    </table>`;
+  document.getElementById('pgInfo').textContent=`Showing ${start+1}–${end} of ${total}`;
+  renderPagination(page, total);
+}
+
+function renderPagination(page, total) {
+  const pages = Math.max(1, Math.ceil(total/PAGE_SIZE));
+  let html='';
+  for(let i=1;i<=Math.min(pages,5);i++) html+=`<button class="pg-btn${i===page?' cur':''}" onclick="goPage(${i})">${i}</button>`;
+  if(pages>5) html+=`<span style="padding:4px;color:var(--text-3)">…</span><button class="pg-btn" onclick="goPage(${pages})">${pages}</button>`;
+  document.getElementById('pgBtns').innerHTML = html;
+}
+
+function goPage(p) {
+  showSkeleton(drawerState.cfg.headers.length);
+  setTimeout(()=>renderDrawerTable(p),350);
+}
+
+
+// ─── ONTIME PANEL DATA ────────────────────────────────────────────────────────
+// Per-company atomic data — this is what individual API calls return per company.
+// The aggregate (top card) is computed from these, matching how ClickHouse works.
+const CO_PANEL_DATA = {
+  edina: {
+    ontime: { bars:[0.4,35.4,33.6,15.9,6.6,3.6,4.4], cumul:[0.4,35.8,69.4,85.3,91.9,95.5,100],
+              bars2:[0.0,1.1,22.4,28.6,21.3,13.8,12.8], cumul2:[0.0,1.1,23.5,52.1,73.4,87.2,100],
+              bars3:[22.1,48.3,19.2,6.4,2.1,1.2,0.7], cumul3:[22.1,70.4,89.6,96.0,98.1,99.3,100],
+              bars4:[75.0,9.8,6.2,4.1,3.1,1.2,0.6], cumul4:[75.0,84.8,91.0,95.1,98.2,99.4,100] },
+    delivery: { bars:[14.2,20.1,25.3,28.7,7.4,3.1,1.2], cumul:[14.2,34.3,59.6,88.3,95.7,98.8,100],
+                bars2:[4.1,16.3,36.8,31.2,8.7,2.4,0.5], cumul2:[4.1,20.4,57.2,88.4,97.1,99.5,100],
+                bars3:[9.4,6.3,4.1,3.2,1.8,0.7,0.5], cumul3:[9.4,15.7,19.8,23.0,24.8,25.5,26.0],
+                bars4:[70.2,76.1,79.8,82.4,75.3,68.1,81.2], cumul4:[70.2,73.4,75.5,77.1,76.4,75.4,76.2] }
+  },
+  provo: {
+    ontime: { bars:[1.2,18.4,42.3,24.1,8.6,3.8,1.6], cumul:[1.2,19.6,61.9,86.0,94.6,98.4,100],
+              bars2:[0.0,0.2,8.4,38.7,32.1,12.6,8.0], cumul2:[0.0,0.2,8.6,47.3,79.4,92.0,100],
+              bars3:[38.4,47.2,10.6,2.8,0.6,0.3,0.1], cumul3:[38.4,85.6,96.2,99.0,99.6,99.9,100],
+              bars4:[100.0,0.0,0.0,0.0,0.0,0.0,0.0], cumul4:[100,100,100,100,100,100,100] },
+    delivery: { bars:[8.4,22.7,31.4,26.3,7.8,2.6,0.8], cumul:[8.4,31.1,62.5,88.8,96.6,99.2,100],
+                bars2:[2.1,12.4,38.6,34.8,9.6,2.2,0.3], cumul2:[2.1,14.5,53.1,87.9,97.5,99.7,100],
+                bars3:[0.0,0.0,0.0,0.0,0.0,0.0,0.0], cumul3:[0,0,0,0,0,0,0],
+                bars4:[94.1,97.6,100,100,98.2,91.4,96.3], cumul4:[94.1,96.2,97.2,97.7,97.4,96.9,97.1] }
+  },
+  camel: {
+    ontime: { bars:[0.2,28.1,36.4,18.7,8.2,4.9,3.5], cumul:[0.2,28.3,64.7,83.4,91.6,96.5,100],
+              bars2:[0.1,0.6,16.4,32.8,23.4,14.7,12.0], cumul2:[0.1,0.7,17.1,49.9,73.3,88.0,100],
+              bars3:[18.6,52.4,17.3,6.8,2.8,1.4,0.7], cumul3:[18.6,71.0,88.3,95.1,97.9,99.3,100],
+              bars4:[79.6,9.1,5.4,3.2,2.1,0.4,0.2], cumul4:[79.6,88.7,94.1,97.3,99.4,99.8,100] },
+    delivery: { bars:[11.2,17.8,28.4,31.2,8.4,2.3,0.7], cumul:[11.2,29.0,57.4,88.6,97.0,99.3,100],
+                bars2:[6.2,19.4,32.1,29.6,9.2,2.8,0.7], cumul2:[6.2,25.6,57.7,87.3,96.5,99.3,100],
+                bars3:[12.4,8.1,5.2,3.8,1.6,0.8,0.4], cumul3:[12.4,20.5,25.7,29.5,31.1,31.9,32.3],
+                bars4:[74.3,81.2,83.6,79.4,72.1,68.8,77.4], cumul4:[74.3,78.1,79.7,79.6,78.6,77.8,78.1] }
+  },
+  w5600: {
+    ontime: { bars:[0.6,32.1,38.4,16.2,7.4,3.2,2.1], cumul:[0.6,32.7,71.1,87.3,94.7,97.9,100],
+              bars2:[0.0,0.4,18.6,34.1,22.8,13.2,10.9], cumul2:[0.0,0.4,19.0,53.1,75.9,89.1,100],
+              bars3:[26.4,49.1,14.6,6.2,2.4,0.9,0.4], cumul3:[26.4,75.5,90.1,96.3,98.7,99.6,100],
+              bars4:[81.8,8.6,4.9,2.8,1.4,0.4,0.1], cumul4:[81.8,90.4,95.3,98.1,99.5,99.9,100] },
+    delivery: { bars:[16.4,23.2,28.1,22.4,7.2,2.2,0.5], cumul:[16.4,39.6,67.7,90.1,97.3,99.5,100],
+                bars2:[3.8,14.2,36.4,32.6,9.8,2.8,0.4], cumul2:[3.8,18.0,54.4,87.0,96.8,99.6,100],
+                bars3:[6.8,4.2,3.6,2.4,0.8,0.4,0.2], cumul3:[6.8,11.0,14.6,17.0,17.8,18.2,18.4],
+                bars4:[78.4,83.6,81.2,79.6,74.8,71.2,80.1], cumul4:[78.4,81.2,81.1,80.7,79.7,79.0,79.6] }
+  },
+  rich: {
+    ontime: { bars:[0.8,30.4,37.2,17.8,7.6,4.2,2.0], cumul:[0.8,31.2,68.4,86.2,93.8,98.0,100],
+              bars2:[0.0,0.6,19.8,31.4,24.2,13.6,10.4], cumul2:[0.0,0.6,20.4,51.8,76.0,89.6,100],
+              bars3:[21.8,51.4,16.2,6.8,2.2,0.9,0.7], cumul3:[21.8,73.2,89.4,96.2,98.4,99.3,100],
+              bars4:[83.1,8.2,4.8,2.4,1.1,0.3,0.1], cumul4:[83.1,91.3,96.1,98.5,99.6,99.9,100] },
+    delivery: { bars:[13.2,21.4,29.6,24.8,7.4,2.8,0.8], cumul:[13.2,34.6,64.2,89.0,96.4,99.2,100],
+                bars2:[4.6,15.8,34.2,31.8,10.2,2.8,0.6], cumul2:[4.6,20.4,54.6,86.4,96.6,99.4,100],
+                bars3:[7.2,5.1,3.8,2.8,1.2,0.6,0.3], cumul3:[7.2,12.3,16.1,18.9,20.1,20.7,21.0],
+                bars4:[80.2,85.4,82.8,78.6,73.2,70.8,81.6], cumul4:[80.2,83.1,82.8,81.8,80.6,80.0,80.6] }
+  }
+};
+
+// Aggregate panel data — weighted by each company's delivered order volume (same logic as ClickHouse GROUP BY)
+function buildAggregatePanelData() {
+  const visible = getVisibleCompanies();
+  if(visible.length === 0) return CO_PANEL_DATA[COMPANIES[0].id]; // fallback
+  if(visible.length === 1) return CO_PANEL_DATA[visible[0].id];   // single company = its own data
+
+  const totalDelivered = visible.reduce((s,c)=>s+c.delivered, 0);
+  if(totalDelivered === 0) return CO_PANEL_DATA[visible[0].id];
+
+  function wavg(field, tab) {
+    const len = CO_PANEL_DATA[visible[0].id][tab][field].length;
+    const result = Array(len).fill(0);
+    visible.forEach(c => {
+      const w = c.delivered / totalDelivered;
+      const d = CO_PANEL_DATA[c.id]?.[tab]?.[field];
+      if(!d) return;
+      d.forEach((v,i) => result[i] += v * w);
+    });
+    return result.map(v => Math.round(v*10)/10);
+  }
+  function toCumul(bars) {
+    let s=0; return bars.map(b=>{s+=b; return Math.round(s*10)/10;});
+  }
+
+  return {
+    ontime: {
+      bars:   wavg('bars','ontime'),   cumul:  toCumul(wavg('bars','ontime')),
+      bars2:  wavg('bars2','ontime'),  cumul2: toCumul(wavg('bars2','ontime')),
+      bars3:  wavg('bars3','ontime'),  cumul3: toCumul(wavg('bars3','ontime')),
+      bars4:  wavg('bars4','ontime'),  cumul4: toCumul(wavg('bars4','ontime')),
+    },
+    delivery: {
+      bars:   wavg('bars','delivery'),   cumul:  toCumul(wavg('bars','delivery')),
+      bars2:  wavg('bars2','delivery'),  cumul2: toCumul(wavg('bars2','delivery')),
+      bars3:  wavg('bars3','delivery'),  cumul3: toCumul(wavg('bars3','delivery')),
+      bars4:  wavg('bars4','delivery'),  cumul4: toCumul(wavg('bars4','delivery')),
+    }
+  };
+}
+
+const CHART_META = {
+  ontime: [
+    { title:'Placement to Pick Up Time (excl. scheduled)', labels:['0-10','10-20','20-30','30-40','40-50','50-60','60+'], bKey:'bars', cKey:'cumul' },
+    { title:'Placement to Delivery Time (excl. scheduled)', labels:['0-10','10-20','20-30','30-40','40-50','50-60','60+'], bKey:'bars2', cKey:'cumul2' },
+    { title:'Drive time (pickup to delivery)', labels:['0-10','10-20','20-30','30-40','40-50','50-60','60+'], bKey:'bars3', cKey:'cumul3' },
+    { title:'On-time Deliveries', labels:['ontime','1-5','5-10','10-15','15-30','30-45','45+'], bKey:'bars4', cKey:'cumul4' },
+  ],
+  delivery: [
+    { title:'Avg. delivery time by hour of day', labels:['8am','9am','10am','11am','12pm','1pm','2pm'], bKey:'bars', cKey:'cumul' },
+    { title:'Orders by promised delivery window', labels:['<30m','30-45m','45-60m','60-90m','90-120m','2-3h','3h+'], bKey:'bars2', cKey:'cumul2' },
+    { title:'Late deliveries by delay bucket', labels:['1-5m','5-10m','10-15m','15-30m','30-60m','60-90m','90m+'], bKey:'bars3', cKey:'cumul3' },
+    { title:'On-time rate trend by day', labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], bKey:'bars4', cKey:'cumul4' },
+  ]
+};
+
+let activeCharts = [];
+let activePanelTab = 'ontime';
+let panelOpen = false;
+let panelScopeId = null; // null = aggregate (top card), string = company id
+
+function toggleOntimePanel(card) {
+  // If open on aggregate already → close. If open on a company → switch to aggregate.
+  if (panelOpen && panelScopeId === null) { closeOntimePanel(); return; }
+  clearPctActiveCells();
+  document.getElementById('card-ontime-top').classList.add('panel-open');
+  panelScopeId = null;
+  _openPanel('All Locations');
+}
+
+function openOntimePanelFor(companyId, cell) {
+  // If clicking the already-active company cell → close
+  if (panelOpen && panelScopeId === companyId) { closeOntimePanel(); return; }
+  clearPctActiveCells();
+  document.getElementById('card-ontime-top').classList.remove('panel-open');
+  cell.classList.add('active-pct');
+  panelScopeId = companyId;
+  const company = COMPANIES.find(c => c.id === companyId);
+  _openPanel(company.name);
+}
+
+function _openPanel(scopeLabel) {
+  panelOpen = true;
+  const panel = document.getElementById('ontimePanel');
+  panel.classList.add('open');
+  document.getElementById('panelTimeframe').textContent = activeTimeframe;
+  const isAggregate = panelScopeId === null;
+  const displayLabel = isAggregate ? document.getElementById('locLabel').textContent : scopeLabel;
+  document.getElementById('panelScope').innerHTML = buildScopeHTML(isAggregate, displayLabel);
+  document.querySelectorAll('.panel-tab').forEach((t,i) => t.classList.toggle('active', i===0));
+  activePanelTab = 'ontime';
+  destroyCharts();
+  showChartPlaceholders();
+  setTimeout(() => {
+    panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+    buildPanelCharts(activePanelTab);
+  }, 120);
+}
+
+function clearPctActiveCells() {
+  document.querySelectorAll('.pct-cell').forEach(c => c.classList.remove('active-pct'));
+  document.getElementById('card-ontime-top').classList.remove('panel-open');
+}
+
+function closeOntimePanel() {
+  panelOpen = false;
+  panelScopeId = null;
+  clearPctActiveCells();
+  document.getElementById('ontimePanel').classList.remove('open');
+  destroyCharts();
+  showChartPlaceholders();
+}
+
+function showChartPlaceholders() {
+  const grid = document.getElementById('chartGrid4');
+  grid.innerHTML = [0,1,2,3].map(i=>`
+    <div class="chart-item">
+      <div class="chart-placeholder" id="ph${i}"></div>
+      <div class="chart-item-title">Loading...</div>
+    </div>`).join('');
+}
+
+function switchPanelTab(btn, tab) {
+  document.querySelectorAll('.panel-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  activePanelTab = tab;
+  destroyCharts();
+  showChartPlaceholders();
+  setTimeout(() => buildPanelCharts(tab), 300);
+}
+
+function destroyCharts() {
+  activeCharts.forEach(c => { try{ c.destroy(); }catch(e){} });
+  activeCharts = [];
+}
+
+function buildPanelCharts(tab) {
+  // Get data: per-company if scoped, aggregate if top-card
+  const rawData = panelScopeId ? CO_PANEL_DATA[panelScopeId][tab] : buildAggregatePanelData()[tab];
+  const meta = CHART_META[tab];
+  const grid = document.getElementById('chartGrid4');
+  grid.innerHTML = meta.map((m, i) => `
+    <div class="chart-item">
+      <div style="height:180px;position:relative"><canvas id="pc${i}"></canvas></div>
+      <div class="chart-item-title">${m.title}</div>
+    </div>`).join('');
+
+  meta.forEach((m, i) => {
+    const bars = rawData[m.bKey];
+    const cumul = rawData[m.cKey];
+    const ctx = document.getElementById('pc'+i).getContext('2d');
+    const maxBar = Math.max(...bars);
+    const yMax = Math.max(Math.ceil(maxBar / 10) * 10 + 10, 20);
+    const c = new Chart(ctx, {
+      data: {
+        labels: m.labels,
+        datasets: [
+          { type:'bar', data:bars,
+            backgroundColor: bars.map(()=>'rgba(93,202,165,0.35)'),
+            borderColor: bars.map(()=>'rgba(93,202,165,0.7)'),
+            borderWidth:1, borderRadius:3,
+            hoverBackgroundColor:'rgba(29,158,117,0.65)', yAxisID:'y' },
+          { type:'line', data:cumul,
+            borderColor:'#1B9970', borderWidth:1.5,
+            pointRadius:3, pointBackgroundColor:'#fff',
+            pointBorderColor:'#1B9970', pointBorderWidth:1.5,
+            tension:0.35, fill:false, yAxisID:'y2' }
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        animation:{ duration:600, easing:'easeOutQuart' },
+        plugins: {
+          legend:{ display:false },
+          tooltip:{ callbacks:{ label: ctx => ctx.dataset.type==='bar' ? `${ctx.raw.toFixed(1)}% of orders` : `${ctx.raw.toFixed(1)}% cumulative` }}
+        },
+        scales: {
+          x:{ grid:{color:'#F0F2F5',lineWidth:1}, ticks:{font:{size:9},color:'#9CA3AF',maxRotation:0}, border:{display:false} },
+          y:{ position:'left', min:0, max:yMax, grid:{color:'#F0F2F5',lineWidth:1}, ticks:{font:{size:9},color:'#9CA3AF',callback:v=>v+'%',maxTicksLimit:5}, border:{display:false} },
+          y2:{ position:'right', min:0, max:100, grid:{display:false}, ticks:{font:{size:9},color:'#9CA3AF',callback:v=>v+'%',maxTicksLimit:5}, border:{display:false} }
+        }
+      },
+      plugins: [{
+        id:'barLabels',
+        afterDraw(chart) {
+          const ctx2 = chart.ctx;
+          chart.data.datasets[0].data.forEach((val, idx) => {
+            const meta2 = chart.getDatasetMeta(0);
+            const bar = meta2.data[idx];
+            if (!bar || val === 0) return;
+            ctx2.save();
+            ctx2.fillStyle = '#9CA3AF';
+            ctx2.font = '8.5px DM Sans, sans-serif';
+            ctx2.textAlign = 'center';
+            ctx2.fillText(val.toFixed(1)+'%', bar.x, bar.y - 4);
+            ctx2.restore();
+          });
+        }
+      }]
+    });
+    activeCharts.push(c);
+  });
+}
+
+
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+  document.querySelectorAll('.metric-cell').forEach(c=>c.classList.remove('active-cell'));
+  document.querySelectorAll('.sum-card.clickable').forEach(c=>c.classList.remove('active-scope'));
+  drawerState = null;
+}
+</script>
+</body>
+</html>

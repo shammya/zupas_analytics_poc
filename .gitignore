@@ -1,0 +1,13 @@
+.env
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# data files
+*.csv
+fetch_progress.log
+
+# frontend
+analytics-ui/node_modules/
+analytics-ui/dist/

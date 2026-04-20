@@ -1,0 +1,305 @@
+/* ── Overlay ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.3);
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--tr);
+}
+
+.overlay.overlayShow {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Drawer panel ── */
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 952px;
+  max-width: 100vw;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  z-index: 201;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .32s cubic-bezier(.4,0,.2,1);
+}
+
+.drawer.drawerOpen {
+  transform: translateX(0);
+}
+
+/* ── Header ── */
+.header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.context {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ctxSep { opacity: .5; }
+
+.ctxActive {
+  color: var(--text-2);
+  font-weight: 600;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.iconWrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconWrap svg { width: 16px; height: 16px; }
+
+.titleGroup { flex: 1; }
+
+.title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: background var(--tr), color var(--tr);
+  margin-left: auto;
+}
+
+.closeBtn:hover { background: var(--border); color: var(--text); }
+
+/* ── Scope & stats ── */
+.scope {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.scopeTag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  background: var(--teal-pale);
+  color: var(--teal-dark);
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.stats {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  min-width: 80px;
+}
+
+.statVal {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.statLbl {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+/* ── Body ── */
+.body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+/* ── Table ── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.table thead th {
+  padding: 9px 12px;
+  text-align: left;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-3);
+  background: #FAFAFA;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background var(--tr);
+}
+
+.table tbody tr:last-child { border-bottom: none; }
+.table tbody tr:hover { background: #FAFBFC; }
+
+.table tbody td {
+  padding: 9px 12px;
+  color: var(--text-2);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.dtVal {
+  font-size: 12px;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Skeleton ── */
+.skelRow {
+  height: 14px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #e8eaed 25%, #f5f6f7 50%, #e8eaed 75%);
+  background-size: 200% 100%;
+  animation: shim 1.2s infinite;
+  min-width: 60px;
+}
+
+.empty {
+  text-align: center;
+  color: var(--text-3);
+  padding: 28px 0;
+}
+
+/* ── Status badges ── */
+.badge { border-radius: 20px; padding: 2px 8px; font-size: 11.5px; font-weight: 600; }
+.badgeDelivered  { background: var(--teal-pale);   color: var(--teal-dark); }
+.badgeDriver     { background: #EFF4FF;             color: #1D4ED8; }
+.badgeDispatcher { background: var(--amber-pale);   color: var(--amber); }
+.badgeDeleted    { background: var(--slate-pale);   color: var(--slate); }
+.badgeFailed     { background: var(--red-pale);     color: var(--red); }
+.badgeIncomplete { background: var(--orange-pale);  color: var(--orange); }
+.badgeUnassigned { background: var(--slate-pale);   color: var(--slate); }
+.badgeAssigned   { background: #EFF4FF;             color: #1D4ED8; }
+.badgeOntime     { background: var(--teal-pale);    color: var(--teal-dark); }
+.badgeLate       { background: var(--red-pale);     color: var(--red); }
+.badgeDefault    { background: var(--bg);           color: var(--text-2); border: 1px solid var(--border); }
+
+/* ── Age coloring ── */
+.ageFresh { color: var(--teal); font-weight: 600; }
+.ageWarn  { color: var(--amber); font-weight: 600; }
+.ageCrit  { color: var(--red); font-weight: 700; }
+
+/* ── Footer ── */
+.footer {
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  padding: 12px 16px;
+  background: var(--surface);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pgInfo {
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+
+.pgBtns {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.pgBtn {
+  min-width: 30px;
+  height: 28px;
+  padding: 0 8px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  color: var(--text-2);
+  font-family: inherit;
+  transition: background var(--tr), border-color var(--tr);
+}
+
+.pgBtn:hover:not(:disabled) {
+  background: var(--teal-pale);
+  border-color: var(--teal-mid);
+  color: var(--teal-dark);
+}
+
+.pgBtn:disabled { opacity: .35; cursor: default; }
+
+.pgBtn.pgCur {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+  font-weight: 600;
+}
+
+.pgEllipsis {
+  color: var(--text-3);
+  font-size: 12.5px;
+  padding: 0 4px;
+}
+
+@keyframes shim {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

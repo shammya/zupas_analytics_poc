@@ -1,0 +1,137 @@
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height .4s cubic-bezier(.4,0,.2,1), opacity .3s ease;
+}
+
+.panel.open {
+  max-height: 660px;
+  opacity: 1;
+}
+
+.inner {
+  padding: 18px 20px 20px;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.breadcrumb {
+  font-size: 12.5px;
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sep { opacity: .5; }
+
+.breadActive {
+  color: var(--text-2);
+  font-weight: 600;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 14px;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  transition: background var(--tr), color var(--tr);
+}
+
+.closeBtn:hover { background: var(--border); color: var(--text); }
+
+/* ── Scope tags ── */
+.scope {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.scopeTag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  background: var(--teal-pale);
+  color: var(--teal-dark);
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+
+.tab {
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color var(--tr), border-color var(--tr);
+}
+
+.tab:hover { color: var(--teal-dark); }
+
+.tab.activeTab {
+  color: var(--teal-dark);
+  border-bottom-color: var(--teal);
+  font-weight: 600;
+}
+
+.tab.disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+/* ── 2×2 Chart grid ── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.chartItem {}
+
+.chartTitle {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 6px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.placeholder {
+  height: 180px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, #e8eaed 25%, #f5f6f7 50%, #e8eaed 75%);
+  background-size: 200% 100%;
+  animation: shim 1.2s infinite;
+}
+
+@keyframes shim {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

@@ -1,0 +1,108 @@
+.zonesWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.zone {}
+
+.cards {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── Base card ── */
+.card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  flex: 1;
+  min-width: 140px;
+  box-shadow: var(--shadow);
+  transition: border-color var(--tr), box-shadow var(--tr), transform var(--tr);
+  overflow: hidden;
+}
+
+.card.clickable {
+  cursor: pointer;
+}
+
+.card.clickable:hover {
+  border-color: var(--teal-mid);
+  box-shadow: 0 0 0 3px var(--teal-pale), var(--shadow);
+  transform: translateY(-1px);
+}
+
+.card.activeScope {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px var(--teal-pale), var(--shadow);
+}
+
+/* ── Icon ── */
+.iconWrap {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  opacity: .55;
+}
+
+.iconBg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.iconBg svg { width: 14px; height: 14px; }
+
+.icon_created    { background: #DBEAFE; color: #2563EB; }
+.icon_delivered  { background: var(--teal-pale); color: var(--teal-dark); }
+.icon_failed     { background: var(--red-pale); color: var(--red); }
+.icon_incomplete { background: var(--orange-pale); color: var(--orange); }
+.icon_deleted    { background: var(--slate-pale); color: var(--slate); }
+.icon_ontime     { background: var(--teal-pale); color: var(--teal-dark); }
+.icon_avgway     { background: var(--amber-pale); color: var(--amber); }
+.icon_avgplace   { background: var(--amber-pale); color: var(--amber); }
+
+/* ── Content ── */
+.value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+  margin-bottom: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.value.skel {
+  width: 60px;
+  height: 26px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e8eaed 25%, #f5f6f7 50%, #e8eaed 75%);
+  background-size: 200% 100%;
+  animation: shim 1.2s infinite;
+}
+
+.ontime .value { color: var(--teal-dark); }
+
+.label {
+  font-size: 12px;
+  color: var(--text-3);
+  font-weight: 500;
+}
+
+.sub {
+  font-size: 11.5px;
+  color: var(--text-3);
+  margin-top: 3px;
+}
+
+@keyframes shim {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
